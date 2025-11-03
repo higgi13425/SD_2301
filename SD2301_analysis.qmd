@@ -1,0 +1,63 @@
+---
+title: "SD_2301"
+format: html
+editor: visual
+---
+
+### setup
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(readxl)
+library(here)
+library(ggsignif)
+```
+
+## Read in data
+
+```{r}
+df <- read_excel(here("SD2301_tidy.xlsx")) |> 
+  select(mice, category, TNF:STAT3) |>
+  pivot_longer(cols = !c(mice,category), names_to = "transcript", values_to = "value") |>
+  mutate(arm = case_when(
+    category == 1 ~ "Negative Control",
+    category == 2 ~ "Drug Control",
+    category == 3 ~ "Inflamm",
+    category == 4 ~ "Inflamm & SD3",
+    category == 5 ~ "Inflamm & SD")) |> 
+  mutate(transcript = case_when(
+    transcript == "TNF" ~ "TNFa",
+    transcript == "IL1" ~ "IL-1b",
+    transcript == "IL6" ~ "IL-6",
+    transcript == "STAT3" ~ "STAT3",
+    transcript == "TGF" ~ "TGFb",
+    transcript == "INF" ~ "IFNg",
+    transcript == "il10" ~ "IL-10")) |>  
+    mutate(arm = ordered(arm, levels = c("Negative Control", "Drug Control", "Inflamm", "Inflamm & SD3", "Inflamm & SD"))) |> 
+  mutate(transcript = factor(transcript, levels = c("TNFa", "IL-1b", "IL-6", "IFNg", "TGFb", "STAT3", 'IL-10'))) |> 
+  filter(transcript != "TGFb" & transcript != "STAT3") |> 
+  filter(arm != "Inflamm & SD3") |>
+  filter(!is.na(value))
+
+```
+
+## Analysis Code
+
+```{r}
+#| fig.width=12
+plot <- df |> 
+  filter(arm != "Inflammation & SD3") |> 
+  ggplot(aes(x = arm, y = value, fill = arm)) +
+  geom_boxplot() +
+  geom_point(position = position_jitterdodge(), size = 1.5, alpha = 0.5) +
+  facet_wrap(~transcript, scales = "free_y") +
+  scale_fill_manual(values = c("Negative Control" = "white", "Drug Control" = "gray", "Inflamm" = "red", "Inflamm & SD" = "yellow")) +
+    theme_classic(base_size = 14) +
+  theme(legend.position = "none") +
+  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+
+plot
+
+ggsave(plot, filename = here("SD2301_plot.png"), width = 12, height = 8, dpi = 300)
+```
