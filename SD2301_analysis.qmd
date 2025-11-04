@@ -12,6 +12,8 @@ library(janitor)
 library(readxl)
 library(here)
 library(ggsignif)
+library(scales)
+library(ggbeeswarm)
 ```
 
 ## Read in data
@@ -27,15 +29,15 @@ df <- read_excel(here("SD2301_tidy.xlsx")) |>
     category == 4 ~ "Inflamm & SD3",
     category == 5 ~ "Inflamm & SD")) |> 
   mutate(transcript = case_when(
-    transcript == "TNF" ~ "TNFa",
-    transcript == "IL1" ~ "IL-1b",
+    transcript == "TNF" ~ "TNF\u03b1",
+    transcript == "IL1" ~ "IL-1\u03b2",
     transcript == "IL6" ~ "IL-6",
     transcript == "STAT3" ~ "STAT3",
     transcript == "TGF" ~ "TGFb",
-    transcript == "INF" ~ "IFNg",
+    transcript == "INF" ~ "IFN\u03b3",
     transcript == "il10" ~ "IL-10")) |>  
     mutate(arm = ordered(arm, levels = c("Negative Control", "Drug Control", "Inflamm", "Inflamm & SD3", "Inflamm & SD"))) |> 
-  mutate(transcript = factor(transcript, levels = c("TNFa", "IL-1b", "IL-6", "IFNg", "TGFb", "STAT3", 'IL-10'))) |> 
+  mutate(transcript = factor(transcript, levels = c("TNF\u03b1", "IL-1\u03b2", "IL-6", "IFN\u03b3", "TGFb", "STAT3", 'IL-10'))) |> 
   filter(transcript != "TGFb" & transcript != "STAT3") |> 
   filter(arm != "Inflamm & SD3") |>
   filter(!is.na(value))
@@ -44,20 +46,82 @@ df <- read_excel(here("SD2301_tidy.xlsx")) |>
 
 ## Analysis Code
 
+Start with IL21 induction of SOCS3 via STAT3 in LCL lines. Human Lymphoblastoid Cell Lines (LCL) that are wild-type (WT), Loss-of-Function (LOF) and Gain-Of-Function (GOF) for STAT3 were tested with IL-21 (50 ng/mL) induction of SOCS3 transcription, which is dependent on functional STAT3. To this induction was added a range of doses (0,0,5, or 1 microM) of SD-2301, a STAT3 degrader.
+
 ```{r}
-#| fig.width=12
+dta <- read_excel("SOSC3 results.xlsx") |> 
+  rename(group = category...3,
+         il_21_ng_ml = `IL21(ng/ml)`) |> 
+  mutate(LCL = c(rep("WT", 22), rep("LOF", 23), rep("GOF", 22))) |> 
+  mutate(LCL = factor(LCL, levels = c ("LOF", "WT", "GOF"))) |> 
+  mutate(il_21_ng_ml = c(rep(0,11), rep(50,11),  rep(0,11),  rep(50,12),  rep(0,11), rep(50,11))) |> 
+  mutate(`SD2301(um)` = c(rep(0, 5), rep(0.5, 3), rep(1.0, 3),
+                          rep(0, 5), rep(0.5, 3), rep(1.0, 3),
+                          rep(0, 5), rep(0.5, 3), rep(1.0, 3),
+                          rep(0, 5), rep(0.5, 4), rep(1.0, 3),
+                          rep(0, 5), rep(0.5, 3), rep(1.0, 3),
+                          rep(0, 5), rep(0.5, 3), rep(1.0, 3))) |> 
+  select(2:3, 6:8)
+dta |> 
+  group_by(group) |> 
+  summarise(avg = mean(SOCS3))
+
+p <- dta  |> clean_names() |> 
+  ggplot(aes(x = lcl, y = socs3)) +
+  geom_boxplot(color = "gray60") +
+  geom_quasirandom(aes(color = lcl))+
+  scale_color_manual(values = c('dodgerblue1', 'dodgerblue3', 'dodgerblue4')) +
+  facet_grid( sd2301_um ~ il_21_ng_ml, labeller = label_both) +
+  labs(y = "SOCS3 Transcription in response to IL-21 Stimulus\nFold vs. Untreated Wild Type",
+       x = "",
+       title = 'A STAT3 Degrader (SD2301) Eliminates IL21-Induced pSTAT3-Driven SOCS3 Transcription',
+       subtitle = "IL-21 stimulus of STAT3 with either 0 or 50 ng/mL for 21 hours in the two x axis facets\nTested in Lymphomblastoid Cell Lines with STAT3 LOF (Loss of Function), WT (Wild Type),\nor GOF (Gain of Function)\nAnti-inflammatory STAT3-degrading activity of SD2301 at 0, 0.5, or 1.0 microM in the three y axis facets",
+       caption = "Lymphoblastoid Cell Lines in the x axis columns -\nLoss of STAT3 Function (LOF), Wild Type (WT), or Gain of Function (GOF)") +
+  theme_linedraw() +
+  theme(legend.position = "none")
+
+
+p + geom_text(
+  data = data.frame(il_21_ng_ml = 0, sd2301_um = 0),
+  mapping = aes(x = 3, y = 60, label = "With no IL21\nOnly the GOF\nCell Line makes SOCS3"), size = 2.8
+) +
+  geom_text(
+  data = data.frame(il_21_ng_ml = 50, sd2301_um = 0),
+  mapping = aes(x = 1, y = 60, label = "With IL21 Stimulation\nAll Cell Lines\nMake More SOCS3\nProportional to\ntheir STAT3 Function"),size = 2.8) +
+  geom_text(
+  data = data.frame(il_21_ng_ml = c(0,50), sd2301_um = c(0.5, 0.5)),
+  mapping = aes(x = 2, y = 60, label = c("With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off", "With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off")), size = 2.8) +
+  geom_text(
+  data = data.frame(il_21_ng_ml = c(0,50), sd2301_um = c(1.0, 1.0)),
+  mapping = aes(x = 2, y = 60, label = c("With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off", "With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off")), size = 2.8)
+
+ggsave(filename = here("LCL_SD2301_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+Next, intestinal fibrosis was induced in CBA/J mice by S. typhimurium, mice were randomized to 5 groups: 1) negative controls; 2) drug-only controls (no fibrosis); 3) fibrosis positive controls induced by S. typhimurium infection, 4) Fibrosis treated once with 30mg/kg SD2301 IV 1 day before infection; 5) Fibrosis treated with 3x_weekly doses of SD2301. All mice were sacrificed at day 22 after infection. Colon and cecum (affected tissue) was analyzed by gross pathology, histological fibrosis scoring, qRT-PCR, and Western blot.
+
+```{r}
+
 plot <- df |> 
   filter(arm != "Inflammation & SD3") |> 
   ggplot(aes(x = arm, y = value, fill = arm)) +
   geom_boxplot() +
   geom_point(position = position_jitterdodge(), size = 1.5, alpha = 0.5) +
-  facet_wrap(~transcript, scales = "free_y") +
+  facet_wrap(~transcript, scales = "free_y" ) +
   scale_fill_manual(values = c("Negative Control" = "white", "Drug Control" = "gray", "Inflamm" = "red", "Inflamm & SD" = "yellow")) +
-    theme_classic(base_size = 14) +
+    ggsignif::geom_signif(comparisons = list(
+    c(1,3), c(3,4), c(1,4)),
+    test = "t.test",
+    step_increase = 0.09) +
+  scale_x_discrete(labels = label_wrap(8)) +
+  theme_linedraw(base_size = 14, base_family = "Arial") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   theme(legend.position = "none") +
-  scale_x_discrete(guide = guide_axis(n.dodge = 2))
+  labs(y = "",  x = "",
+       title = "SD-2301 Effect on Colonic Transcription of Inflammatory Genes",
+       subtitle = "Salmonella-induced Inflammation vs. Treatment with a Single IV Dose of STAT3 Degrader SD-2301")
 
 plot
 
-ggsave(plot, filename = here("SD2301_plot.png"), width = 12, height = 8, dpi = 300)
+ggsave(plot, filename = here("SD2301_plot.png"), width = 10, height = 8, dpi = 300)
 ```

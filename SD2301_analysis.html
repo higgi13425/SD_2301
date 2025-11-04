@@ -128,51 +128,93 @@ The following objects are masked from 'package:stats':
 <div class="cell-output cell-output-stderr">
 <pre><code>here() starts at /Users/peterhiggins/Documents/RCode/SD_2301</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggsignif)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggsignif)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(scales)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'scales'
+
+The following object is masked from 'package:purrr':
+
+    discard
+
+The following object is masked from 'package:readr':
+
+    col_factor</code></pre>
+</div>
 </div>
 </section>
 <section id="read-in-data" class="level2">
 <h2 class="anchored" data-anchor-id="read-in-data">Read in data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="fu">here</span>(<span class="st">"SD2301_tidy.xlsx"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mice, category, TNF<span class="sc">:</span>STAT3) <span class="sc">|&gt;</span></span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">!</span><span class="fu">c</span>(mice,category), <span class="at">names_to =</span> <span class="st">"transcript"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arm =</span> <span class="fu">case_when</span>(</span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Negative Control"</span>,</span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Drug Control"</span>,</span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"Inflamm"</span>,</span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">4</span> <span class="sc">~</span> <span class="st">"Inflamm &amp; SD3"</span>,</span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"Inflamm &amp; SD"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transcript =</span> <span class="fu">case_when</span>(</span>
-<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"TNF"</span> <span class="sc">~</span> <span class="st">"TNFa"</span>,</span>
-<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"IL1"</span> <span class="sc">~</span> <span class="st">"IL-1b"</span>,</span>
-<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"IL6"</span> <span class="sc">~</span> <span class="st">"IL-6"</span>,</span>
-<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"STAT3"</span> <span class="sc">~</span> <span class="st">"STAT3"</span>,</span>
-<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"TGF"</span> <span class="sc">~</span> <span class="st">"TGFb"</span>,</span>
-<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"INF"</span> <span class="sc">~</span> <span class="st">"IFNg"</span>,</span>
-<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"il10"</span> <span class="sc">~</span> <span class="st">"IL-10"</span>)) <span class="sc">|&gt;</span>  </span>
-<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arm =</span> <span class="fu">ordered</span>(arm, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Negative Control"</span>, <span class="st">"Drug Control"</span>, <span class="st">"Inflamm"</span>, <span class="st">"Inflamm &amp; SD3"</span>, <span class="st">"Inflamm &amp; SD"</span>))) <span class="sc">|&gt;</span> </span>
-<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transcript =</span> <span class="fu">factor</span>(transcript, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"TNFa"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IL-6"</span>, <span class="st">"IFNg"</span>, <span class="st">"TGFb"</span>, <span class="st">"STAT3"</span>, <span class="st">'IL-10'</span>))) <span class="sc">|&gt;</span> </span>
-<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transcript <span class="sc">!=</span> <span class="st">"TGFb"</span> <span class="sc">&amp;</span> transcript <span class="sc">!=</span> <span class="st">"STAT3"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(arm <span class="sc">!=</span> <span class="st">"Inflamm &amp; SD3"</span>) <span class="sc">|&gt;</span></span>
-<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read_excel</span>(<span class="fu">here</span>(<span class="st">"SD2301_tidy.xlsx"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mice, category, TNF<span class="sc">:</span>STAT3) <span class="sc">|&gt;</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">cols =</span> <span class="sc">!</span><span class="fu">c</span>(mice,category), <span class="at">names_to =</span> <span class="st">"transcript"</span>, <span class="at">values_to =</span> <span class="st">"value"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">arm =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">1</span> <span class="sc">~</span> <span class="st">"Negative Control"</span>,</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">2</span> <span class="sc">~</span> <span class="st">"Drug Control"</span>,</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">3</span> <span class="sc">~</span> <span class="st">"Inflamm"</span>,</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">4</span> <span class="sc">~</span> <span class="st">"Inflamm &amp; SD3"</span>,</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>    category <span class="sc">==</span> <span class="dv">5</span> <span class="sc">~</span> <span class="st">"Inflamm &amp; SD"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transcript =</span> <span class="fu">case_when</span>(</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"TNF"</span> <span class="sc">~</span> <span class="st">"TNFa"</span>,</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"IL1"</span> <span class="sc">~</span> <span class="st">"IL-1b"</span>,</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"IL6"</span> <span class="sc">~</span> <span class="st">"IL-6"</span>,</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"STAT3"</span> <span class="sc">~</span> <span class="st">"STAT3"</span>,</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"TGF"</span> <span class="sc">~</span> <span class="st">"TGFb"</span>,</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"INF"</span> <span class="sc">~</span> <span class="st">"IFNg"</span>,</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a>    transcript <span class="sc">==</span> <span class="st">"il10"</span> <span class="sc">~</span> <span class="st">"IL-10"</span>)) <span class="sc">|&gt;</span>  </span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">arm =</span> <span class="fu">ordered</span>(arm, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"Negative Control"</span>, <span class="st">"Drug Control"</span>, <span class="st">"Inflamm"</span>, <span class="st">"Inflamm &amp; SD3"</span>, <span class="st">"Inflamm &amp; SD"</span>))) <span class="sc">|&gt;</span> </span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">transcript =</span> <span class="fu">factor</span>(transcript, <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"TNFa"</span>, <span class="st">"IL-1b"</span>, <span class="st">"IL-6"</span>, <span class="st">"IFNg"</span>, <span class="st">"TGFb"</span>, <span class="st">"STAT3"</span>, <span class="st">'IL-10'</span>))) <span class="sc">|&gt;</span> </span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(transcript <span class="sc">!=</span> <span class="st">"TGFb"</span> <span class="sc">&amp;</span> transcript <span class="sc">!=</span> <span class="st">"STAT3"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(arm <span class="sc">!=</span> <span class="st">"Inflamm &amp; SD3"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(value))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
 <section id="analysis-code" class="level2">
 <h2 class="anchored" data-anchor-id="analysis-code">Analysis Code</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> </span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(arm <span class="sc">!=</span> <span class="st">"Inflammation &amp; SD3"</span>) <span class="sc">|&gt;</span> </span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> arm, <span class="at">y =</span> value, <span class="at">fill =</span> arm)) <span class="sc">+</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_jitterdodge</span>(), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>transcript, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Negative Control"</span> <span class="ot">=</span> <span class="st">"white"</span>, <span class="st">"Drug Control"</span> <span class="ot">=</span> <span class="st">"gray"</span>, <span class="st">"Inflamm"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"Inflamm &amp; SD"</span> <span class="ot">=</span> <span class="st">"yellow"</span>)) <span class="sc">+</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">theme_classic</span>(<span class="at">base_size =</span> <span class="dv">14</span>) <span class="sc">+</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"none"</span>) <span class="sc">+</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">guide =</span> <span class="fu">guide_axis</span>(<span class="at">n.dodge =</span> <span class="dv">2</span>))</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a>plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>plot <span class="ot">&lt;-</span> df <span class="sc">|&gt;</span> </span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(arm <span class="sc">!=</span> <span class="st">"Inflammation &amp; SD3"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(<span class="at">x =</span> arm, <span class="at">y =</span> value, <span class="at">fill =</span> arm)) <span class="sc">+</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>() <span class="sc">+</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">position =</span> <span class="fu">position_jitterdodge</span>(), <span class="at">size =</span> <span class="fl">1.5</span>, <span class="at">alpha =</span> <span class="fl">0.5</span>) <span class="sc">+</span></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(<span class="sc">~</span>transcript, <span class="at">scales =</span> <span class="st">"free_y"</span>) <span class="sc">+</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_fill_manual</span>(<span class="at">values =</span> <span class="fu">c</span>(<span class="st">"Negative Control"</span> <span class="ot">=</span> <span class="st">"white"</span>, <span class="st">"Drug Control"</span> <span class="ot">=</span> <span class="st">"gray"</span>, <span class="st">"Inflamm"</span> <span class="ot">=</span> <span class="st">"red"</span>, <span class="st">"Inflamm &amp; SD"</span> <span class="ot">=</span> <span class="st">"yellow"</span>)) <span class="sc">+</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    ggsignif<span class="sc">::</span><span class="fu">geom_signif</span>(<span class="at">comparisons =</span> <span class="fu">list</span>(</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">2</span>), <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">3</span>), <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">4</span>), <span class="fu">c</span>(<span class="dv">3</span>,<span class="dv">5</span>), <span class="fu">c</span>(<span class="dv">4</span>,<span class="dv">5</span>), <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">4</span>),</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">c</span>(<span class="dv">1</span>,<span class="dv">5</span>)),</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">test =</span> <span class="st">"t.test"</span>,</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">step_increase =</span> <span class="fl">0.12</span>) <span class="sc">+</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">label_wrap</span>(<span class="dv">6</span>)) <span class="sc">+</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_linedraw</span>(<span class="at">base_size =</span> <span class="dv">16</span>, <span class="at">base_family =</span> <span class="st">"Arial"</span>)</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>plot</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -180,7 +222,32 @@ The following objects are masked from 'package:stats':
 </figure>
 </div>
 </div>
-<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(plot, <span class="at">filename =</span> <span class="fu">here</span>(<span class="st">"SD2301_plot.png"</span>), <span class="at">width =</span> <span class="dv">12</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggsave</span>(plot, <span class="at">filename =</span> <span class="fu">here</span>(<span class="st">"SD2301_plot.png"</span>), <span class="at">width =</span> <span class="dv">12</span>, <span class="at">height =</span> <span class="dv">8</span>, <span class="at">dpi =</span> <span class="dv">300</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Warning: Computation failed in `stat_signif()`.
+Caused by error in `t.test.default()`:
+! not enough 'y' observations</code></pre>
+</div>
 </div>
 </section>
 
