@@ -61,12 +61,14 @@ dta <- read_excel("SOSC3 results.xlsx") |>
                           rep(0, 5), rep(0.5, 4), rep(1.0, 3),
                           rep(0, 5), rep(0.5, 3), rep(1.0, 3),
                           rep(0, 5), rep(0.5, 3), rep(1.0, 3))) |> 
-  select(2:3, 6:8)
+  select(2:3, 6:8) |> 
+  clean_names() 
+
 dta |> 
   group_by(group) |> 
-  summarise(avg = mean(SOCS3))
+  summarise(avg = mean(socs3))
 
-p <- dta  |> clean_names() |> 
+p <- dta  |> 
   ggplot(aes(x = lcl, y = socs3)) +
   geom_boxplot(color = "gray60") +
   geom_quasirandom(aes(color = lcl))+
@@ -89,8 +91,11 @@ p + geom_text(
   data = data.frame(il_21_ng_ml = 50, sd2301_um = 0),
   mapping = aes(x = 1, y = 60, label = "With IL21 Stimulation\nAll Cell Lines\nMake More SOCS3\nProportional to\ntheir STAT3 Function"),size = 2.8) +
   geom_text(
-  data = data.frame(il_21_ng_ml = c(0,50), sd2301_um = c(0.5, 0.5)),
-  mapping = aes(x = 2, y = 60, label = c("With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off", "With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off")), size = 2.8) +
+  data = data.frame(il_21_ng_ml = 0, sd2301_um = 0.5),
+  mapping = aes(x = 2, y = 60, label = c("With SD2301 at 0.5 uM Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off")), size = 2.8) +
+  geom_text(
+  data = data.frame(il_21_ng_ml = 50, sd2301_um = 0.5),
+  mapping = aes(x = 2, y = 60, label = c("With SD2301 at 0.5 uM Degrading STAT3\nAll but the GOF Cell Line\nHave STAT3 and SOCS3 Turned Off")), size = 2.8) +
   geom_text(
   data = data.frame(il_21_ng_ml = c(0,50), sd2301_um = c(1.0, 1.0)),
   mapping = aes(x = 2, y = 60, label = c("With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off", "With SD2301 Degrading STAT3\nAll Cell Lines\nHave STAT3 and SOCS3 Turned Off")), size = 2.8)
