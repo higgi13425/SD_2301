@@ -79,8 +79,8 @@ p <- dta  |>
        title = 'A STAT3 Degrader (SD2301) Eliminates IL21-Induced pSTAT3-Driven SOCS3 Transcription',
        subtitle = "IL-21 stimulus of STAT3 with either 0 or 50 ng/mL for 21 hours in the two x axis facets\nTested in Lymphomblastoid Cell Lines with STAT3 LOF (Loss of Function), WT (Wild Type),\nor GOF (Gain of Function)\nAnti-inflammatory STAT3-degrading activity of SD2301 at 0, 0.5, or 1.0 microM in the three y axis facets",
        caption = "Lymphoblastoid Cell Lines in the x axis columns -\nLoss of STAT3 Function (LOF), Wild Type (WT), or Gain of Function (GOF)") +
-  theme_linedraw() +
-  theme(legend.position = "none")
+  theme_grey() +
+  theme(legend.position = "none") 
 
 
 p + geom_text(
@@ -119,7 +119,7 @@ plot <- df |>
     test = "t.test",
     step_increase = 0.09) +
   scale_x_discrete(labels = label_wrap(8)) +
-  theme_linedraw(base_size = 14, base_family = "Arial") +
+  theme_grey(base_size = 14, base_family = "Arial") +
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   theme(legend.position = "none") +
   labs(y = "",  x = "",
